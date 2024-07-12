@@ -1,7 +1,7 @@
 import streamlit as st
 from functools import partial
 
-from workflow import *
+from agents.workflow import *
 
 st.set_page_config(layout="wide")
 st.title('Multilingual Chat Room')

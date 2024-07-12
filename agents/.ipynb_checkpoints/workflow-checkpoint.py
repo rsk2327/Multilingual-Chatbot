@@ -16,8 +16,8 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores.faiss import DistanceStrategy
 
 
-from utils import *
-from agents import * 
+from agents.utils import *
+from agents.agents import * 
 
 
 
