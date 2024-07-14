@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "multilingual-chatbot"
+version = "0.1.0"
+description = "LLM Chatroom that facilitates multi-lingual communication"
+authors = ["Roshan Santhosh <roshan.santhosh@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain = "^0.2.7"
+langchain-openai = "^0.1.16"
+langgraph = "^0.1.8"
+streamlit = "^1.36.0"
+getpass2 = "^1.0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

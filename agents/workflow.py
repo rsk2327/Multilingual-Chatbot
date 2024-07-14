@@ -38,7 +38,7 @@ def load_retriever():
 
 def generate_agents():
 
-    llm = ChatOpenAI(model="gpt-4", streaming=True)
+    llm = ChatOpenAI(model="gpt-3.5-turbo", streaming=True)
 
     retriever = load_retriever()
 
