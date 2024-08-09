@@ -8,7 +8,7 @@ from langchain_openai.chat_models import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.graph import END, StateGraph, START
 import functools
-from typing import TypedDict, Annotated, Sequence, Tuple, Optional, List
+from typing import TypedDict, Annotated, Sequence, Tuple, Optional, List, Any
 import operator
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 
@@ -24,15 +24,23 @@ from agents.agents import *
 
 
 
-def load_retriever():
+def load_retriever(path : Path, valid_extensions : List[str]):
 
-    loader = PyPDFLoader("machine_learning_basics.pdf")
-    docs = loader.load()
+    # Identifying the valid files
+    valid_files = [file for file in path.iterdir() if file.is_file() and file.suffix.lower() in valid_extensions]
+
+    # Reading the file data 
+    docs = []
+    for file in valid_files : 
+        doc_data = PyPDFLoader(path / file).load()
+        docs += doc_data
     
+    # Splitting the text data into chunks 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    splits = text_splitter.split_documents(docs)
     
-    store = FAISS.from_documents(docs, OpenAIEmbeddings(), distance_strategy=DistanceStrategy.COSINE)
-    
+    # Initializing the database and retriever
+    store = FAISS.from_documents(splits, OpenAIEmbeddings(), distance_strategy=DistanceStrategy.COSINE)
     retriever = store.as_retriever(search_kwargs={"k": 3})
 
     return retriever
@@ -40,7 +48,7 @@ def load_retriever():
 
 class MultilingualChatWorkflow(object):
 
-    def __init__(self, user_list: List[Tuple[str,str]], knowledge_base_directory: Optional[str] = None, llm: Optional[str] = None):
+    def __init__(self, user_list: List[Tuple[str,str]], knowledge_base_directory: Optional[str] = None, llm: Optional[str] = None, valid_extensions: Optional[List[str]] = ['.pdf'], retriever : Optional[Any] = None ):
 
 
         ## Initializing the LLM
@@ -51,14 +59,20 @@ class MultilingualChatWorkflow(object):
 
 
         self.user_list = user_list
+        self.valid_extensions = valid_extensions
 
-        self.knowledge_base_directory = self.validate_knowledge_base(knowledge_base_directory)
+        self.knowledge_base_directory = self.validate_knowledge_base(knowledge_base_directory, valid_extensions)
 
-        self.retriever = load_retriever()
+        if retriever is None:
+            self.retriever = load_retriever(self.knowledge_base_directory, valid_extensions)
+        else:
+            self.retriever = retriever
+
+        
 
 
 
-    def validate_knowledge_base(self, directory_path : str) -> Path | None:
+    def validate_knowledge_base(self, directory_path : str, valid_extensions: List[str]) -> Path | None:
         """Checks the user provided knowledge base directory to ensure that its valid. Also checks for the number of valid files found within the directory
 
         Args:
@@ -76,9 +90,6 @@ class MultilingualChatWorkflow(object):
         if not path.exists() or not path.is_dir():
             raise NotADirectoryError(f"The path '{directory_path}' is not a valid directory.")
         
-        # Define the file extensions to look for
-        valid_extensions = ('.pdf', '.docx', '.doc')
-
         # Count the valid files
         valid_files = [file for file in path.iterdir() if file.is_file() and file.suffix.lower() in valid_extensions]
         file_count = len(valid_files)
@@ -104,9 +115,9 @@ class MultilingualChatWorkflow(object):
         self.user_agents = {}
 
         for (userid, lang) in self.user_list:
-            self.user_agents[userid] = {'agent': UserAgent(llm, lang)}
+            self.user_agents[userid] = {'agent': UserAgent(self.llm, lang)}
 
-        self.aya_agent = AyaAgent(self.llm, retriever)
+        self.aya_agent = AyaAgent(self.llm, self.retriever)
         
         self.supervisor_agent = SupervisorAgent(self.llm)
 
@@ -131,7 +142,7 @@ class MultilingualChatWorkflow(object):
         ## Defining edges
         workflow.add_edge(START, "Supervisor")
         
-        for userid in user_agents:
+        for userid in self.user_agents:
             workflow.add_edge("Supervisor", userid)
             workflow.add_edge(userid, END)
         
