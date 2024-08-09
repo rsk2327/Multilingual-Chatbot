@@ -19,8 +19,8 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores.faiss import DistanceStrategy
 
 
-from agents.utils import *
-from agents.agents import * 
+from ml_chat.agents.utils import *
+from ml_chat.agents.agents import * 
 
 
 
@@ -192,3 +192,19 @@ class MultilingualChatWorkflow(object):
             output[userid] = self.user_agents[userid]['agent'].chat_history[-1].content
 
         return output
+    
+    def send_message(self, sender:str, message:str)-> None:
+
+        self.user_agents[sender]['agent'].send_text(message)
+
+
+    def get_latest_message(self):
+
+        output = {}
+        for userid in self.user_agents:
+            output[userid] = self.user_agents[userid]['agent'].chat_history[-1].content
+
+        return output
+
+
+

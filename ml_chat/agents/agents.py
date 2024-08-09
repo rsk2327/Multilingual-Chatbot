@@ -15,7 +15,7 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores.faiss import DistanceStrategy
 
-from agents.utils import *
+from ml_chat.agents.utils import *
 
 USER_SYSTEM_PROMPT = """You are a translator. Translate the text provided by the user into {user_language}. Output only the 
     translated text. If the text is already in {user_language}, return the user's text as it is.
