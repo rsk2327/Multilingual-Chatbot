@@ -8,7 +8,7 @@ from langchain_openai.chat_models import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.graph import END, StateGraph, START
 import functools
-from typing import TypedDict, Annotated, Sequence, Tuple, Optional, List, Any
+from typing import TypedDict, Annotated, Sequence, Tuple, Optional, List, Any, Dict
 import operator
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 
@@ -173,117 +173,22 @@ class MultilingualChatWorkflow(object):
             self.user_agents[userid]['agent'].set_graph(self.app) 
 
 
-def generate_agents(user_list):
-    """Creates all required agents for the multilingual chatroom. This includes : 
-    1. Individual agents corresponding to each user
-    2. A supervisor agent to coordinate the workflow
-    3. An Aya agent to assist with RAG applications
+    def generate_response(self, sender:str , message:str) -> Dict[str,str]:
+        """ Starts the agent workflow when a message is sent by a user. Returns the message to be displayed to each of the user's
 
-    Args:
-        user_list Tuple(string, string):  
+        Args:
+            sender (str): ID of the user sending the message
+            message (str): Content of the message
 
-    Returns:
-        _type_: _description_
-    """
+        Returns:
+            Dict[str,str]: Dict containing the messages to be shown to each user
+        """
 
-    llm = ChatOpenAI(model="gpt-3.5-turbo", streaming=True)
+        # Start the workflow by sending the message from the starting user 
+        self.user_agents[sender]['agent'].send_text(message)
 
-    retriever = load_retriever()
-    
-    user_agents = {}
+        output = {}
+        for userid in self.user_agents:
+            output[userid] = self.user_agents[userid]['agent'].chat_history[-1].content
 
-    for (userid, lang) in user_list:
-        user_agents[userid] = {'agent': UserAgent(llm, lang)}
-
-    # french_agent = UserAgent(llm, "French")
-    # spanish_agent = UserAgent(llm, "Spanish")
-    # english_agent = UserAgent(llm, "English")
-    
-    aya_agent = AyaAgent(llm, retriever)
-    
-    supervisor_agent = SupervisorAgent(llm)
-
-    # Creates the node functions for each of the user agents
-    for userid in user_agents:
-        user_agents[userid]['node'] = functools.partial(get_user_node, agent=user_agents[userid]['agent'], name=userid)
-    
-    # french_node = functools.partial(get_user_node, agent=french_agent, name="French")
-    # spanish_node = functools.partial(get_user_node, agent=spanish_agent, name="Spanish")
-    # english_node = functools.partial(get_user_node, agent=english_agent, name="English")
-    
-    aya_node = functools.partial(get_aya_node, agent = aya_agent, supervisor_agent = supervisor_agent, name ="Aya")
-    supervisor_node = functools.partial(get_supervisor_node, agent = supervisor_agent)
-
-    workflow = StateGraph(AgentState)
-    
-    # agentList = {'French':{'node':french_node, 'agent':french_agent},
-    #                    'Spanish':{'node':spanish_node, 'agent':spanish_agent},
-    #                    'English':{'node':english_node, 'agent':english_agent},
-    #                    }
-    
-    
-    #Defining nodes
-    for userid in user_agents:
-        workflow.add_node(userid, user_agents[userid]['node'])
-    
-    workflow.add_node("Supervisor", supervisor_node)
-    
-    #Defining edges
-    workflow.add_edge(START, "Supervisor")
-    
-    for userid in user_agents:
-        workflow.add_edge("Supervisor", userid)
-        workflow.add_edge(userid, END)
-    
-    
-    workflow.add_node("Aya",aya_node) 
-    
-    
-    
-    def router(state) :
-        last_message = state["messages"][-1]
-        if last_message.sender == "Aya":
-            return "Supervisor"
-        else:
-            return 'END'
-            
-    workflow.add_conditional_edges("Aya", router, {'Supervisor':'Supervisor','END':END})
-
-
-    def router2(state) :
-        last_message = state["messages"][-1]
-        if last_message.sender == "Aya":
-            return "END"
-        else:
-            return 'Aya'
-    
-    workflow.add_conditional_edges("Supervisor", router2  ,{'Aya':'Aya','END':END})
-
-    app = workflow.compile()
-
-    for userid in user_agents:
-        user_agents[userid]['agent'].set_graph(app)
-
-    # french_agent.set_graph(app)
-    # spanish_agent.set_graph(app)
-    # english_agent.set_graph(app)
-
-    return user_agents, 
-
-
-
-def generate_response(sender, text):
-
-    user_agents = generate_agents()
-
-    # agent_map = {'English':english_agent, 'Spanish':spanish_agent,'French':french_agent}
-
-
-    user_agents[sender]['agent'].send_text(text)
-    # agent_map[sender].send_text(text)
-
-    output = [english_agent.chat_history[-1].content,
-              spanish_agent.chat_history[-1].content,
-              french_agent.chat_history[-1].content]
-
-    return output
+        return output
