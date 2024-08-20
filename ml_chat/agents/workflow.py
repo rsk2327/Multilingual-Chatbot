@@ -23,7 +23,7 @@ from langchain_anthropic import ChatAnthropic
 
 
 from ml_chat.agents.utils import *
-from ml_chat.agents.agents import AyaAgent, UserAgent, SupervisorAgent, get_aya_node, get_supervisor_node, get_user_node, AgentState
+from ml_chat.agents.agents import AyaAgent, UserAgent, get_aya_node, get_supervisor_node, get_user_node, AgentState
 
 def router(state, sender, dest1, dest2):
     last_message = state["messages"][-1]
@@ -143,21 +143,15 @@ class MultilingualChatWorkflow(object):
         
         self.aya_agent = AyaAgent(self.llm, self.store, self.retriever)
 
-        # self.aya_query_agent = AyaQueryAgent(self.llm, self.retriever)
-
-        # self.aya_save_agent = AyaSaveAgent(self.llm, self.retriever)
-        
-        self.supervisor_agent = SupervisorAgent(self.llm)
-
+        user_knowledge_file = str(self.knowledge_base_directory.joinpath('user_data.txt'))
 
         for userid in self.user_agents:
             self.user_agents[userid]['node'] = functools.partial(get_user_node, agent=self.user_agents[userid]['agent'], name=userid)
         
-        aya_node = functools.partial(get_aya_node, agent = self.aya_agent, supervisor_agent = self.supervisor_agent, user_knowledge_file = '/Users/roshansk/Documents/GitHub/Multilingual-Chatbot/ml_chat/playground/data/user_data.txt', name ="Aya")
-        # aya_query_node = functools.partial(get_aya_query_node, agent = self.aya_query_agent, supervisor_agent = self.supervisor_agent, name ="Aya_Query")
-        # aya_save_node = functools.partial(get_aya_save_node, agent = self.aya_save_agent, supervisor_agent = self.supervisor_agent, name ="Aya_Save")
+        aya_node = functools.partial(get_aya_node, aya = self.aya_agent, user_knowledge_file = user_knowledge_file, name ="Aya")        
+        supervisor_node = functools.partial(get_supervisor_node)
 
-        supervisor_node = functools.partial(get_supervisor_node, agent = self.supervisor_agent)
+
 
         workflow = StateGraph(AgentState)
 
@@ -168,8 +162,7 @@ class MultilingualChatWorkflow(object):
         
         workflow.add_node("Supervisor", supervisor_node)
         workflow.add_node("Aya",aya_node) 
-        # workflow.add_node("Aya_Query",aya_query_node) 
-        # workflow.add_node("Aya_Save",aya_save_node) 
+ 
         
         ## Defining edges
         workflow.add_edge(START, "Supervisor")
@@ -178,66 +171,14 @@ class MultilingualChatWorkflow(object):
             workflow.add_edge("Supervisor", userid)
             workflow.add_edge(userid, END)
         
-        
-        # def router(state) :
-        #     last_message = state["messages"][-1]
-        #     if last_message.sender == "Aya":
-        #         return "Supervisor"
-        #     else:
-        #         return 'END'
 
         workflow.add_conditional_edges("Aya",
                                         partial(router, sender = 'Aya', dest1 = 'Supervisor', dest2 = 'END'),
                                         {'Supervisor':'Supervisor','END':END})
-                
-        # # Aya_Query -> Supervisor
-        # workflow.add_conditional_edges("Aya_Query",
-        #                                 partial(router, sender = 'Aya_Query', dest1 = 'Supervisor', dest2 = 'END'),
-        #                                 {'Supervisor':'Supervisor','END':END})
-        
-        # # Aya_Save -> Supervisor
-        # workflow.add_conditional_edges("Aya_Save",
-        #                                 partial(router, sender = 'Aya_Save', dest1 = 'Supervisor', dest2 = 'END'),
-        #                                 {'Supervisor':'Supervisor','END1':END})
-
-
-        # def router2(state) :
-        #     last_message = state["messages"][-1]
-        #     if last_message.sender == "Aya":
-        #         return "END"
-        #     else:
-        #         return 'Aya'
-
-        def router2(state):
-            last_message = state["messages"][-1]
-            if last_message.sender == "Aya_Query":
-                return "END"
-            else:
-                return 'Aya_Query'
-            
-        def router3(state):
-            last_message = state["messages"][-1]
-            if last_message.sender == "Aya_Save":
-                return "END"
-            else:
-                return 'Aya_Save'
-            
+    
         workflow.add_conditional_edges("Supervisor", 
                                        partial(router, sender = 'Aya', dest1 = 'END', dest2 = 'Aya'),
-                                    # router2,
                                        {'Aya':'Aya','END':END})
-        
-        # workflow.add_conditional_edges("Supervisor", 
-        #                             #    partial(router, sender = 'Aya_Query', dest1 = 'END', dest2 = 'Aya_Query'),
-        #                             router2,
-        #                                {'Aya_Query':'Aya_Query','END':END})
-        
-        # workflow.add_conditional_edges("Supervisor",
-        #                             #    partial(router, sender = 'Aya_Save', dest1 = 'END1', dest2 = 'Aya_Save'),
-        #                             router3,
-        #                                {'Aya_Save':'Aya_Save','END1':END})
-        
-
 
         ## Compiling Graph
         self.app = workflow.compile()

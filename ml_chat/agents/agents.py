@@ -55,7 +55,7 @@ If its not specifically addressed to you, respond with 'NULL'.
 # Chat Message : {message}
 # """
 
-SUPERVISOR_AGENT_PROMPT = """
+AYA_SUPERVISOR_PROMPT = """
 You are a supervisor tasked with managing the chat messages with Aya, an AI assistant. Given a chat
 message, identify whether the message was directed to Aya and if so, what was its intention. 
 
@@ -66,6 +66,20 @@ User : Output this if the message doesnt address Aya
 
 Chat Message : {message}
 """
+
+AYA_TRANSLATE_PROMPT = """You are an English translator. Translate the message provided by the user into English.
+
+Obey the following rules : 
+    1. Only translate the text thats written after 'Message:' and nothing else
+    2. If the text is already in English then return the message as it is.
+    3. Return only the translated text
+    4. Ensure that your translation uses formal language
+    5. Ensure that names of people are also translated, especially the name 'Aya'
+
+    Message:
+    {message}
+"""
+
 
 
 class ChatMessage(object):
@@ -131,87 +145,85 @@ class UserAgent(object):
     def invoke(self, message:BaseMessage) -> AIMessage:
         
         # output = self.chain.invoke({'user_text':[message]})
-        print(message)
+        # print(message)
         
         output = self.chain.invoke({'message':message.content, 'user_language':self.user_language})
-        print(f"Within invoke. output type : {type(output)}")
+        # print(f"Within invoke. output type : {type(output)}")
         return output
-            
 
-class AyaAgent(object):
+class AyaTranslate(object):
 
-    def __init__(self, llm, store, retriever):
+    def __init__(self, llm) -> None:
+        self.llm = llm 
+        prompt = ChatPromptTemplate.from_template(AYA_TRANSLATE_PROMPT)
+        self.chain = prompt | llm 
+        
+    def invoke (self, message: str) -> AIMessage:
+        output = self.chain.invoke({'message':message})
+        return output
 
+class AyaQuery(object):
+
+    def __init__(self, llm, store, retriever) -> None:
         self.llm = llm
         self.retriever = retriever
         self.store = store
         qa_prompt = ChatPromptTemplate.from_template(AYA_AGENT_PROMPT)
-        self.chain = qa_prompt | llm 
-        self.chat_history = []
+        self.chain = qa_prompt | llm
 
     def invoke(self, question : str) -> AIMessage:
 
         context = format_docs(self.retriever.invoke(question))
         rag_output = self.chain.invoke({'question':question, 'context':context})
-        answer = rag_output
-        return answer
+        return rag_output
 
-    
-# class AyaQueryAgent(object):
-
-#     def __init__(self, llm, retriever):
-
-#         self.llm = llm
-#         self.retriever = retriever
-#         qa_prompt = ChatPromptTemplate.from_template(AYA_AGENT_PROMPT)
-#         self.chain = qa_prompt | llm 
-
-#     def invoke(self, question : str) -> AIMessage:
-
-#         context = format_docs(self.retriever.invoke(question))
-#         rag_output = self.chain.invoke({'question':question, 'context':context})
-#         answer = rag_output
-#         return answer
-    
-# class AyaSaveAgent(object):
-
-#     def __init__(self, llm, retriever):
-
-#         self.llm = llm
-#         self.retriever = retriever
-#         qa_prompt = ChatPromptTemplate.from_template(AYA_AGENT_PROMPT)
-#         self.chain = qa_prompt | llm 
-
-#     def invoke(self, question : str) -> AIMessage:
-
-#         context = format_docs(self.retriever.invoke(question))
-#         rag_output = self.chain.invoke({'question':question, 'context':context})
-#         answer = rag_output
-#         return answer
-          
-class SupervisorAgent(object):
+class AyaSupervisor(object):
 
     def __init__(self, llm):
         
-        prompt = ChatPromptTemplate.from_template(SUPERVISOR_AGENT_PROMPT)
+        prompt = ChatPromptTemplate.from_template(AYA_SUPERVISOR_PROMPT)
         self.chain = prompt | llm
 
     def invoke(self, message : str) -> str:
         output = self.chain.invoke(message)
         return output.content
     
-       
+class AyaAgent(object):
+
+    def __init__(self, llm, store, retriever):
+
+        self.query_agent = AyaQuery(llm, store, retriever)
+        self.translator_agent = AyaTranslate(llm)
+        self.supervisor_agent = AyaSupervisor(llm)
+        self.store = store
+        self.llm = llm
+        self.chat_history = []
+        
+        # qa_prompt = ChatPromptTemplate.from_template(AYA_AGENT_PROMPT)
+        # self.chain = qa_prompt | llm 
+        
+
+    def invoke(self, question : str) -> AIMessage:
+        pass
+
 
 #### AGENT NODE FUNCTIONS #######
 
-def get_aya_node(state, agent, supervisor_agent, user_knowledge_file, name):
+def get_aya_node(state, aya, user_knowledge_file, name):
 
-    latest_message = state["messages"][-1]  
-    task = supervisor_agent.invoke(latest_message.content)
+    latest_message = state["messages"][-1]
 
+    # Convert messages into English
+    translated_message = aya.translator_agent.invoke(latest_message.content)
+
+    print(translated_message)
+
+    # Identify the type of task associated with message
+    task = aya.supervisor_agent.invoke(translated_message.content)
+    
     if task == 'Query':
 
-        result = agent.invoke(latest_message.content)
+        result = aya.query_agent.invoke(translated_message.content)
 
         return {
         'messages' : [ChatMessage(result, sender = 'Aya')]
@@ -219,11 +231,11 @@ def get_aya_node(state, agent, supervisor_agent, user_knowledge_file, name):
     elif task == 'Save':
 
         # TO-DO : Check if there is exists a previous message or not
-        previous_message = agent.chat_history[-1]
+        previous_message = aya.chat_history[-1]
 
         append_to_file(user_knowledge_file, previous_message.content)
         ## Adding the previous message text to vector database
-        agent.store.add_texts([previous_message.content])   
+        aya.store.add_texts([previous_message.content])   
 
         return_message = AIMessage("The previous message has been added to the knowledge base")
 
@@ -231,40 +243,8 @@ def get_aya_node(state, agent, supervisor_agent, user_knowledge_file, name):
                 'messages' : [ChatMessage(return_message, sender = 'Aya')]
             }
     else:
-        agent.chat_history.append(latest_message)
+        aya.chat_history.append(translated_message)
         return {'messages':[]}
-
-# def get_aya_query_node(state, agent, supervisor_agent, name):
-
-#     latest_message = state["messages"][-1]  
-#     agent_check = supervisor_agent.invoke(latest_message.content)
-
-#     if agent_check == 'Aya':
-
-#         result = agent.invoke(latest_message.content)
-
-#         return {
-#         'messages' : [ChatMessage(result, sender = 'Aya')]
-#     }
-                              
-#     else:
-#         return {'messages':[]}
-
-# def get_aya_save_node(state, agent, supervisor_agent, name):
-
-#     latest_message = state["messages"][-1]  
-#     agent_check = supervisor_agent.invoke(latest_message.content)
-
-#     if agent_check == 'Aya':
-
-#         result = agent.invoke(latest_message.content)
-
-#         return {
-#         'messages' : [ChatMessage(result, sender = 'Aya')]
-#     }
-                              
-#     else:
-#         return {'messages':[]}
 
 
 def get_user_node(state, agent, name):
@@ -284,8 +264,7 @@ def get_user_node(state, agent, name):
     }
 
 
-
-def get_supervisor_node(state, agent : SupervisorAgent):
+def get_supervisor_node(state):
     
     latest_message = state["messages"][-1]
     

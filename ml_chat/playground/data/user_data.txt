@@ -1,2 +1,6 @@
 आज का मौसम बहुत खूबसूरत है!
 I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
+I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
+I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
+I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
+I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
