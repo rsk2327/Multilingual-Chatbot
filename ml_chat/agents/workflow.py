@@ -69,7 +69,7 @@ class MultilingualChatWorkflow(object):
         if llm.lower() == 'openai':
             self.llm = ChatOpenAI(model="gpt-4o", streaming=True, temperature = 0.0)
         elif llm.lower() == 'aya':
-            self.llm = ChatCohere(model="c4ai-aya-23-35b", streaming=True, cohere_api_key = 'tPMB8vd4F7JwWPDR0prGJUxZlhISwEPhLO6PpBme', temperature = 0.0)
+            self.llm = ChatCohere(model="c4ai-aya-23-35b", streaming=True, temperature = 0.0)
         elif llm.lower() == 'anthropic':
             self.llm = ChatAnthropic(model='claude-3-opus-20240229', streaming = True, temperature = 0.0)
         else:
