@@ -21,13 +21,25 @@ USER_SYSTEM_PROMPT = """You are a translator. Translate the text provided by the
     translated text. If the text is already in {user_language}, return the user's text as it is.
 """
 
+USER_SYSTEM_PROMPT2 = """You are a {user_language} translator, translating a conversation between work colleagues. Translate the message provided by the user into {user_language}. 
+
+    Obey the following rules : 
+    1. Only translate the text thats written after 'Message:' and nothing else
+    2. If the text is already in {user_language} then return the message as it is.
+    3. Return only the translated text
+    4. Ensure that your translation uses formal language
+
+    Message:
+    {message}
+"""
+
 AYA_AGENT_PROMPT = """Your name is Aya and you are an assistant that answers questions. Only respond if the question is addressed to you (Aya)!! 
 If its not specifically addressed to you, respond with 'NULL'.
     
 
     Obey the following rules while responding : 
     1. Only use the text provided in the context to answer the question.
-    2. If you don't know the answer, just say that you don't know. 
+    2. If you don't know the answer or the context doesnt have the required info, respond with "Sorry, I don't know that". 
     3. Use three sentences maximum and keep the answer concise.
     
     Question: {question} 
@@ -35,10 +47,22 @@ If its not specifically addressed to you, respond with 'NULL'.
     Answer:
 """
 
+# SUPERVISOR_AGENT_PROMPT = """
+# You are a supervisor tasked with managing the chat messages with Aya, an AI assistant. Given a chat
+# message, identify whether the message was directed to Aya. If so, respond with 'Aya'. Otherwise, 
+# respond with 'User'
+
+# Chat Message : {message}
+# """
+
 SUPERVISOR_AGENT_PROMPT = """
 You are a supervisor tasked with managing the chat messages with Aya, an AI assistant. Given a chat
-message, identify whether the message was directed to Aya. If so, respond with 'Aya'. Otherwise, 
-respond with 'User'
+message, identify whether the message was directed to Aya and if so, what was its intention. 
+
+Respond with one of the below 3 options : 
+Query : Output this is the message is asking Aya to answer a question
+Save : Output this is the message asks Aya to save a peice of information to the knowledge base
+User : Output this if the message doesnt address Aya
 
 Chat Message : {message}
 """
@@ -73,21 +97,13 @@ class AgentState(TypedDict):
 
 class UserAgent(object):
 
-    def __init__(self, llm, user_language):
+    def __init__(self, llm, userid, user_language):
         self.llm = llm
+        self.userid = userid
         self.user_language = user_language
         self.chat_history = []
 
-        system_prompt = USER_SYSTEM_PROMPT.format(user_language = user_language)
-    
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system", system_prompt,
-                ),
-                MessagesPlaceholder(variable_name = 'user_text'),
-            ]
-        )
+        prompt = ChatPromptTemplate.from_template(USER_SYSTEM_PROMPT2)
 
         self.chain = prompt | llm
 
@@ -95,11 +111,12 @@ class UserAgent(object):
     def set_graph(self, graph):
         self.graph = graph
 
-    def send_text(self,text, debug = False):
+    def send_text(self,text:str, debug = False):
 
-        message = ChatMessage(message = HumanMessage(content=text), sender = self.user_language)
+        message = ChatMessage(message = HumanMessage(content=text), sender = self.userid)
         inputs = {"messages": [message]}
         output = self.graph.invoke(inputs, debug = debug)
+        print(f"Within send_text. output type : {type(output)}")
         return output
 
     def display_chat_history(self, content_only = False):
@@ -111,22 +128,26 @@ class UserAgent(object):
                 print(i)
 
     
-    def invoke(self, message:ChatMessage):
+    def invoke(self, message:BaseMessage) -> AIMessage:
         
-        output = self.chain.invoke({'user_text':[message]})
+        # output = self.chain.invoke({'user_text':[message]})
+        print(message)
+        
+        output = self.chain.invoke({'message':message.content, 'user_language':self.user_language})
+        print(f"Within invoke. output type : {type(output)}")
         return output
             
 
-
-    
 class AyaAgent(object):
 
-    def __init__(self, llm, retriever):
+    def __init__(self, llm, store, retriever):
 
         self.llm = llm
         self.retriever = retriever
+        self.store = store
         qa_prompt = ChatPromptTemplate.from_template(AYA_AGENT_PROMPT)
         self.chain = qa_prompt | llm 
+        self.chat_history = []
 
     def invoke(self, question : str) -> AIMessage:
 
@@ -134,6 +155,39 @@ class AyaAgent(object):
         rag_output = self.chain.invoke({'question':question, 'context':context})
         answer = rag_output
         return answer
+
+    
+# class AyaQueryAgent(object):
+
+#     def __init__(self, llm, retriever):
+
+#         self.llm = llm
+#         self.retriever = retriever
+#         qa_prompt = ChatPromptTemplate.from_template(AYA_AGENT_PROMPT)
+#         self.chain = qa_prompt | llm 
+
+#     def invoke(self, question : str) -> AIMessage:
+
+#         context = format_docs(self.retriever.invoke(question))
+#         rag_output = self.chain.invoke({'question':question, 'context':context})
+#         answer = rag_output
+#         return answer
+    
+# class AyaSaveAgent(object):
+
+#     def __init__(self, llm, retriever):
+
+#         self.llm = llm
+#         self.retriever = retriever
+#         qa_prompt = ChatPromptTemplate.from_template(AYA_AGENT_PROMPT)
+#         self.chain = qa_prompt | llm 
+
+#     def invoke(self, question : str) -> AIMessage:
+
+#         context = format_docs(self.retriever.invoke(question))
+#         rag_output = self.chain.invoke({'question':question, 'context':context})
+#         answer = rag_output
+#         return answer
           
 class SupervisorAgent(object):
 
@@ -150,22 +204,68 @@ class SupervisorAgent(object):
 
 #### AGENT NODE FUNCTIONS #######
 
-def get_aya_node(state, agent, supervisor_agent, name):
+def get_aya_node(state, agent, supervisor_agent, user_knowledge_file, name):
 
     latest_message = state["messages"][-1]  
-    agent_check = supervisor_agent.invoke(latest_message.content)
+    task = supervisor_agent.invoke(latest_message.content)
 
-    if agent_check == 'Aya':
+    if task == 'Query':
 
         result = agent.invoke(latest_message.content)
 
         return {
         'messages' : [ChatMessage(result, sender = 'Aya')]
-    }
-                              
+        }
+    elif task == 'Save':
+
+        # TO-DO : Check if there is exists a previous message or not
+        previous_message = agent.chat_history[-1]
+
+        append_to_file(user_knowledge_file, previous_message.content)
+        ## Adding the previous message text to vector database
+        agent.store.add_texts([previous_message.content])   
+
+        return_message = AIMessage("The previous message has been added to the knowledge base")
+
+        return {
+                'messages' : [ChatMessage(return_message, sender = 'Aya')]
+            }
     else:
+        agent.chat_history.append(latest_message)
         return {'messages':[]}
-        
+
+# def get_aya_query_node(state, agent, supervisor_agent, name):
+
+#     latest_message = state["messages"][-1]  
+#     agent_check = supervisor_agent.invoke(latest_message.content)
+
+#     if agent_check == 'Aya':
+
+#         result = agent.invoke(latest_message.content)
+
+#         return {
+#         'messages' : [ChatMessage(result, sender = 'Aya')]
+#     }
+                              
+#     else:
+#         return {'messages':[]}
+
+# def get_aya_save_node(state, agent, supervisor_agent, name):
+
+#     latest_message = state["messages"][-1]  
+#     agent_check = supervisor_agent.invoke(latest_message.content)
+
+#     if agent_check == 'Aya':
+
+#         result = agent.invoke(latest_message.content)
+
+#         return {
+#         'messages' : [ChatMessage(result, sender = 'Aya')]
+#     }
+                              
+#     else:
+#         return {'messages':[]}
+
 
 def get_user_node(state, agent, name):
     

@@ -16,10 +16,12 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores.faiss import DistanceStrategy
 
-from agents import *
 
 
 def format_docs(docs):
     return "\n\n ------------".join(doc.page_content for doc in docs)
 
 
+def append_to_file(file_name, text):
+    with open(file_name, 'a') as file:
+        file.write(text + '\n')

@@ -54,12 +54,12 @@ def user_input_arg(value: str):
       
             
 
-def create_app(user_list, knowledge_base_directory):
+def create_app(user_list, knowledge_base_directory, llm):
 
     app = FastAPI()
 
-    workflow = MultilingualChatWorkflow(user_list=user_list, knowledge_base_directory= knowledge_base_directory)
-    workflow.initialize_agent_workflow()
+    workflow = MultilingualChatWorkflow(user_list=user_list, knowledge_base_directory= knowledge_base_directory, llm = llm)
+    
 
     @app.post("/process")
     async def generate_response(input_message : InputMessage):
@@ -77,9 +77,7 @@ def create_app(user_list, knowledge_base_directory):
 
     return app
 
-def start_api_service(host, port):
-    app = create_app()
-    uvicorn.run(app, host=host, port=port)
+
 
 
 
@@ -89,17 +87,20 @@ def main():
     parser.add_argument("--port", type=int, help="Port number (optional)")
     parser.add_argument('-u', '--users', type=user_input_arg, nargs='+', required=True, help='List of tuples or path to CSV file')
     parser.add_argument('--data_directory', type=str, required=False, help="Directory containing the files for the knowledge base (RAG)")
+    parser.add_argument('--llm', type=str, required=False, help="LLM model to power the agent workflow")
     
     # Add more arguments as needed
     
     args = parser.parse_args()
 
     host = args.host
+    llm = args.llm
 
     if args.port:
         port = args.port
     else:
         port = find_available_port(args.host)
+
 
     print(f"Starting API service on {args.host}:{port}")
 
@@ -107,10 +108,7 @@ def main():
     print(user_list)
     data_directory = args.data_directory
 
-    # print(f"Number of users in chatroom : {len(user_list)}")
-
-
-    app = create_app(user_list=user_list, knowledge_base_directory=data_directory)
+    app = create_app(user_list=user_list, knowledge_base_directory=data_directory, llm = llm)
     uvicorn.run(app, host=host, port=port)
 
 
