@@ -1,6 +1,1 @@
-आज का मौसम बहुत खूबसूरत है!
-I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
-I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
-I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
-I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
-I heard somewhere that the new models are going to be run on 8x A100 GPUs, which have a total memory of 500 GB.
+So you need to first select an appropriate instance. Since this is a larger model, I would recommend loading a A6000 or A100 GPU, anything greater than 40 GB. You can then download the model checkpoints from our Huggingface repo. You will also need the vLLM package for running inference. After that, you should be able to run the script to generate the analysis results.

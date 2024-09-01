@@ -1,16 +1,35 @@
 import argparse
 import socket
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
+from fastapi.websockets import WebSocketDisconnect
 import pandas as pd
 import threading
 from pydantic import BaseModel
-
+import json 
+from typing import List 
 from ml_chat.agents.workflow import MultilingualChatWorkflow
 
 class InputMessage(BaseModel):
     sender: str
     message: str
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: dict):
+        for connection in self.active_connections:
+            await connection.send_json(message)
+
+
 
 def find_available_port(host='localhost', start_port=8000):
     """Helper function to retrieve available ports to run API service
@@ -60,6 +79,38 @@ def create_app(user_list, knowledge_base_directory, llm):
 
     workflow = MultilingualChatWorkflow(user_list=user_list, knowledge_base_directory= knowledge_base_directory, llm = llm)
     
+    manager = ConnectionManager()
+
+    @app.websocket("/ws")
+    async def websocket_endpoint(websocket: WebSocket):
+        await manager.connect(websocket)
+        try:
+            while True:
+                data = await websocket.receive_json()
+                sender = data.get('sender', 'Unknown')
+                message = data.get('message', '')
+                
+                workflow.send_message(sender,message)
+
+                output = workflow.get_latest_message()
+
+                # Broadcast the message to all connected clients
+                if len(output)==2:                    
+                    await manager.broadcast(output[1])
+                    await manager.broadcast(output[0])
+                else:
+                    await manager.broadcast(output[0])
+                
+                
+               
+        except WebSocketDisconnect:
+            manager.disconnect(websocket)
+            await manager.broadcast({"sender": "System", "message": f"Client #{id(websocket)} left the chat"})
+        except json.JSONDecodeError:
+            await websocket.send_json({"error": "Invalid JSON"})
+        except KeyError as e:
+            await websocket.send_json({"error": f"Missing required key: {str(e)}"})
+
 
     @app.post("/process")
     async def generate_response(input_message : InputMessage):
@@ -87,7 +138,7 @@ def main():
     parser.add_argument("--port", type=int, help="Port number (optional)")
     parser.add_argument('-u', '--users', type=user_input_arg, nargs='+', required=True, help='List of tuples or path to CSV file')
     parser.add_argument('--data_directory', type=str, required=False, help="Directory containing the files for the knowledge base (RAG)")
-    parser.add_argument('--llm', type=str, required=False, help="LLM model to power the agent workflow")
+    parser.add_argument('--llm', default = "openai", type=str, required=False, help="LLM model to power the agent workflow")
     
     # Add more arguments as needed
     

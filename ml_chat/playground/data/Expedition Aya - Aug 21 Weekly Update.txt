@@ -1,0 +1,528 @@
+Weekly Field Notes
+Aug 21
+Week 6/6! 
+
+Agenda
+🌌 Expedition Updates
+
+✨ Team Updates - Round , 3-4 mins each
+
+
+(note to Madeline – record the call!)
+
+Expedition Updates
+✨ Last update call! 
+
+✨ Closing Ceremony next week - slides / video due on Sunday, August 25! ← only teams who submit by this can present and be considered for top prizes 
+
+https://docs.google.com/presentation/d/1513eS-0Ugt7l2Ykln0FewuPXZFsnsIioDgFKbVK_Wu8/edit?usp=sharing
+
+✨ 5-min each - will be very strict here.
+
+✨ Judges deliberate for 15 mins, then winners announced in the call! 
+
+✨  Address collection for stickers! https://forms.gle/CQ3TChfVGi7KPC8W6
+
+Expedition Updates
+✨ Judges:
+Sebastian Ruder
+Multilingual Modeling Lead
+Marzieh Fadaee
+Sr Research Scientist
+Alice Schoenauer Sebag
+Sr MLR - Safety
+
+Expedition Updates
+✨ Top Prize Categories:
+Gold - $5,000 Cohere API Credits for the team and digital certificates
+Silver - $4,000 Cohere API Credits for the team and digital certificates
+Bronze - $3,000 Cohere API Credits for the team and digital certificates
+Most Innovative - $2,000 Cohere API Credits for the team and digital certificates
+Most Promising - $1,000 Cohere API Credits for the team and digital certificates
+
+Format of team-update
+⏱️ Each team will have 3-4 mins to present a 1 slide update of their project.
+📣 Use this time to share 
+what you’ve been working on, 
+what’s coming up next, 
+and any open questions or blockers
+🛝 Feel free to copy the template on the the next slide or make your own.
+✨ Together we’ll see how the C4AI team, or other teams can help
+🫡 Captains are responsible for ensuring the 1 slide update is prepared in advance of each meeting, and determining who will present on behalf of the project
+
+
+Updates
+
+Upcoming
+
+Open Questions
+
+Other
+
+Presenting today:
+Vision for the finale: [[[ use this box to share what you plan on sharing at during your 5 min slot at our finale in the last week of August! ]]]
+TEAM NAME
+TEMPLATE
+Copy this slide and fill in, or make your own
+
+Updates
+There are geometric difference between global and local harmful content from Aya redteaming dataset when the specific activations are investigated, and this situation happens across different languages
+We can steer Aya23 8B using more general harmless and harmful datasets under multilingual settings
+Upcoming
+Prepare the final presentation
+Start drafting a workshop paper to summarise all findings and experimental results using Aya23 8B
+Plan to test more LLMs under multilingual settings
+Open Questions
+How do we upload our presentation by Aug 26?
+Other
+
+Presenting today: Ruizhe Li
+Vision for the finale: 
+Mechanistically Understanding Aya
+
+Updates
+Evals run for our initial models. Dist-Qwen2-1.5B. Teacher model Aya-23-8B.
+
+Tried pruning without recovery training. (50% pruning).
+
+Also trying pruning with smaller loss.
+Presenting today: Guijin Son
+Vision for the finale: 
+DistAYA
+
+Multi-Agent Aya for Workforce 
+Updates
+Finalise multi-agent MVP - add RAG for company context and allow retrieval  
+Implemented new features for Aya assistant : Documentation-on-the-Go and Summarize
+Included new LLM backends : Claude, Aya 23. Current performance - Claude > ChatGPT > Aya
+Finalise dialogue dataset for 2 latin and 2 non-latin based languages
+Upcoming
+Finalise dataset and dev work,
+Finalise repo
+final presentation
+Presenting today: Mahdi, Roshan
+Problem statement:Building teams, breaking barriers - seamless communication beyond language 
+Open Questions
+https://discord.com/channels/1111315570160320636/1273236583738511432
+
+
+Updates
+
+Partnered with multilingual experts to develop Aya speaker datasets in 6 languages total 
+Involved refining sub-datasets used
+Generated embeddings for all combinations of data
+Performed and evaluated clustering results
+Performed data augmentation with cosine similarity with promising results
+Streamlined our code for better efficiency 
+Developed initial training script
+Upcoming
+
+Develop positive and negative pairs in our data
+Positive: same style (speaker), different content
+Negative: different style (speaker), same content
+Performing contrastive model learning & training
+Performing thorough evaluation and modeling testing
+Open Questions
+
+Embedding context window - input sequence length limit (i.e, 8192)
+Number of slides in final deck
+Other
+
+Stretch goal of using cosine similarity and LLM output to generate style-consistent translation with multiple outputs
+Explore cross-linguistic style differences
+Presenting today: Katrina + Karishma
+Vision for the finale: Findings of a model that takes a pair of text and determines if it is either the same or different style. This will be language agnostic.
+St-Aya-L
+St-Aya-L
+
+Maya: Multimodal Aya 
+Updates
+Bug fixing on instruction tuning.
+Verification script on dataset quality improvement.
+Initial Evaluation on Preamble used to create translations is Done.
+Toxic content is being analyzed in two ways, Image analysis with LlavaGuard 34B & Text analysis of GPT values with Toxic Bert. 
+Upcoming
+Rerun instruct-tuning.
+Run the evaluation script on instruction tuning.
+Fix the bad translations in 4.7M Dataset.
+New High Quality Dataset that don't contain Toxic, Bad translations.
+Presenting today: Nahid,Karthik
+Vision for the finale:
+Release the Maya-8b-llava1.5-Siglip model in 8 languages on Hugging Face.
+
+Release Dataset of the Maya-llava-pretrain on HF along with evaluation results on all translations (Dataset).
+
+Updates
+Data cleaning
+Synthetic Dataset
+Human Dataset
+Data analysis
+Data visualization KDE
+Designing
+Label platform ready for deployment
+
+
+Upcoming
+Testing platform
+Collect Human Labels
+Verify data cleaning
+Presenting today: Agustin Garagorry, Rosina Garagorry
+Vision for the finale: [[[ https://www.figma.com/proto/mSvdKBY2YKmGayQIqN1LqC/Aya?page-id=0%3A1&node-id=1-2&viewport=-1051%2C636%2C0.35&t=BapOjY8vrzfuGKCe-1&scaling=contain&content-scaling=fixed&starting-point-node-id=1%3A2&share=1 ]]]
+Multilingual Crisis Management
+
+The Language Effect
+On Political Knowledge and Opinions
+Updates
+
+added a deeper analysis of the Aya dataset with a focus on political statement topics and stances
+analyzed the correlation (human vs LLM w/ language li) with the actual survey results from EUandI
+new BorderLine robustness checks and added the EUandI 2024 results
+many new figures and updating the report
+Upcoming
+
+finishing our final event slides
+finalizing the first report draft
+
+
+beyond the project: 
+adding more (open) LLMs to the pipeline
+setting up a benchmarking site with the evaluated LLMs
+Presenting today: Christopher
+Vision for the finale: We plan to show the results of three political bias tests and the political statement topics in the datasets for languages in Aya 23. We will also present a small example of how to integrate this language robust testing. 
+Liberal Society
+Environmental Protection
+German
+English
+⬇️ -50%
+⬇️ -66.14%
+higher means 
+more different
+
+Updates
+Translated RB to 3 langs using Google Translate API.
+Evaluated GPT-4/Aya/ Gemma/Llama on new translations.
+NLLB-3.3B translation poor in Chinese.
+Upcoming
+Human annotations are almost finished.
+Paper writing in progress.
+More ablations?
+Open Questions
+What amt of drop is *now* significant?
+Ablations?
+Presenting today: Srishti
+Vision for the finale: A high-quality evaluation benchmark (datasets + leaderboard) for multilingual reward models.
+RM Multilingual (1/2)
+Agreement on 40 Samples
+Indonesian:
+Human vs RB:          66.7%
+Human vs Llama3.1-8b: 50.0%
+
+Spanish:
+Human vs RB:          80.0%
+Human vs Llama3.1-8b: 60.0%
+
+RM Multilingual (2/2)
+Aya23-35B shows 8.7% improvement on avg. with Google-Translate over NLLB-3.3B.
+Improvements in Chinese is mentionable (5-10%); NLLB poor in Chinese/Korean/Japanese.
+BTRM shows performance degradation with Google-Translate for Indonesian/Hindi.
+The gap for English vs Multilingual is high for classifier models (> +10%) vs the generative models (max 6%).
+
+Updates
+50 Multi-turn conversations (Cultural Context based)
+4 Languages (Hindi English Gujarati and Marathi) 
+Novelty: Code switching consideration
+Linguistic Parameters defined and human rating provided. (Sample demonstration of pragmatics eval)
+1 page position paper to discuss the data expansion strategies with the dataset release and linguistic eval framework
+Upcoming
+Push data to hugging face hub.
+Achieve our vision for the finale.
+Future Works.
+Work on more languages.
+Proper evaluation of dataset.
+Presenting today: Aniruddha Walke/Guneet Singh
+Vision for the finale: Human Preference based dataset, linguistic Framework based Technical Paper, slides and a video demo.
+Sanskriti Aya
+https://docs.google.com/spreadsheets/d/1NjXswSOk6dZOFWHX4JGi2YjhCxnEd4Uh-vt3A_jVs60/edit?gid=0#gid=0
+
+
+Updates
+Bug fixes on how retrieval + black box llm code.
+Final dataset generation done.
+Finetune dataset on our models
+Upcoming
+Evaluate Models.
+Push models to hugging face hub.
+Work on the frontend of our hugging face space.
+Record a video demo for the finale.
+Future Works.
+Work on more languages.
+Proper evaluation of dataset.
+Presenting today: Mardiyyah Oduwole
+Vision for the finale: Hugging face spaces, github repo, slides and a video demo.
+Multilingual Document Understanding
+
+Updates
+Instruction & sample response quality check
+Response Generation w/ Few-shot (On-going)
+Upcoming
+Overall Instruction Dataset quality check
+Instruction Dataset Release
+Open Questions
+
+Other
+
+Presenting today: Hyunwoo Ko
+Vision for the finale: Release final instruction dataset
+Korean Instruction Dataset
+
+Synthetic Multilingual Instruction Generation 
+Updates
+
+-> We’ve all the Datasets ready:
+1. Orca Hindi Dataset (Avoids transliteration, English words etc)
+2. Orca English only (Can be used by others for further translations)
+3. Orca Complete Dataset Distilled from Llama 70B 3.1
+4. Context based Dataset from Wiki Corpora. We were able to create 7-8 Diverse Tasks such as Extractive Q&A, Long form Q&A, Question Generation
+5. FLAN Long Form Dataset
+
+-> We decided to finetune on Together AI considering the cheaper costs. We’ll be going with Llama 3.1 8B or else Mistral 7B Model 
+
+-> Discussed on what to present in Final Meeting
+
+Upcoming
+
+Finetuning on Orca Dataset and Benchmarking Models
+Presenting today: Desik
+Vision for the finale: 
+
+Open Source:
+1. Open Source all the 5-6 Diverse Long Form Non Licensed Datasets we have 
+2. Benchmark and publish the results of each of this Dataset (We might Benchmark for major ones) 
+3. We also think this Long Form Datasets might be SOTA for low resource languages
+
+
+Synthetic Multilingual Instruction Generation (2/3) 
+Presenting today: Desik
+Orca with GPT4 Distillation (Licensed) 
+Orca Distilled from Llama 70B (Non Licensed)
+Take 
+Instructions
+Open Source
+Orca Only English
+Open Source: 
+People can use for their language
+Orca Hindi
+Open Source: 
+We expect this to be SOTA 😊
+FLAN 
+(Normal + COT)
+FLAN Long Form + COT with 20K instructions with equal distribution of each Task
+Open Source
+ORCA DATA PIPELINE
+Translation
+Filtering 
+FLAN DATA PIPELINE
+
+Synthetic Multilingual Instruction Generation (3/3) 
+Presenting today: Desik
+Hindi Corpora
+Articles with 500-2K characters
+Generate Q&A Pair using LLM (20K)
+Take questions from this to Generate Long Q&A (7K)
+2 Different Instructions:
+1. Long Form Q&A
+2. Get Question from Answer
+5 Different Instructions:
+1. Extractive Q&A
+2. Give Answer given [context & question]
+3. Give the question given Context
+4. Give a question without Context
+……
+
+
+Final Dataset (20K)
+Descriptive Questions 
+CONTEXT BASED SYNTHETIC PIPELINE
+
+Project Overview
+Aim: To determine if the perplexity of a sequence can be used to assess whether the model is more likely to answer it correctly.
+Setup: Aya-23 8B and 35B (In-Use), Command Models (Next Step)
+Datasets: Okapi HellaSwag (Finished),Okapi MMLU,ARC and Expedition-MMLU (Next Step)
+Evaluation Setup: Via LMEvalHarness
+Metrics Consulted: Generation likelihood based accuracy for MCQ benchmarks and Byte + Word level perplexity (to remain tokenizer agnostic)
+
+Presenting today: 
+Roshan & Mohammad Aflah Khan 
+Perplexity v/s Evaluation (1/2)
+Updates:
+
+Pre-trained languages have better model performance and lower perplexity (word and byte) than untrained languages
+
+
+Word and Byte perplexity don't have a linear relationship. 
+Languages with highest word perplexity : Armenian, Kannada, Telugu. Languages with highest byte perplexity : Basque, Hungarian, Serbian. 
+English has the lowest word perplexity but not in the lower half for byte perplexity 
+
+While byte perplexity doesn't show much difference with model performance, with word perplexity, lower perplexity shows correlation with higher model performance.
+
+
+Perplexity v/s Evaluation (2/2)
+
+Upcoming
+
+Scale runs to remaining models x datasets 
+
+Investigate byte v/s word perplexity, their relationship and its effects
+
+Effect of benchmark source (translated v/s human vetted)
+
+Effect of type of benchmark
+
+Understand the significance of samples with outlier perplexity values
+
+Write a paper 😁
+
+Updates
+We encountered issues with ChromaDB in deployments, so we switched to the Pinecone DB API to increase speed and simplify deployment.
+With PineconeDB, we were able to implement hierarchical search by creating document summaries.
+This also allowed us to incorporate hybrid search and BM25 for better retrieval.
+
+Other
+Issues with production key to get app working
+Presenting today: Maryam and Luis
+Vision for the finale: Demo of Chatbot, slides on objective, architecture, Scoring and next steps
+Multi-lingual Climate Change Chatbot
+Upcoming
+Team focusing on finishing slides
+
+Enhancing Sinhala NLP
+
+
+
+Updates
+Fine-tuned gemma-2-9b model on 1M translated flan dataset 
+
+
+Developed the evaluation pipeline using lm-evaluation-harness on the sinhala-MMLU
+
+Upcoming
+Run the evaluation pipeline on the fine-tuned model and other open source models that supports sinhala
+Open Questions
+
+Other
+Running keras model on
+lm-evaluation-harness 
+Presenting today: Chamath
+Vision for the finale: Demo a fine-tuned LLM for Sinhala, release an instruction dataset in Sinhala, and release an evaluation dataset for the LLM on the Sinhala language.
+
+Updates
+Worked on red-teaming existing proprietary models to see what potential issues to look out for   Does purposefully adding spelling errors work ? worked on some, maybe didn’t add spell check internally   Does adding emojis in the text work ? worked on most, maybe emojis weren’t present in their training data 
+Planned implementation approaches for various use cases
+   higher focus on recall for social media usage (maybe F0.5 as metric) to avoid bots slipping away
+   higher focus on precision for academic and other domains to avoid false allegations of AI usage
+Comparing ensemble approaches   How many models might be appropriate ? how should the voting work ?   Are the mis-classified parts same in outputs of all models ?  
+Performing error analysis   Are the metrics equally good when machine-human proportion in the texts varies ?   Are completely human-written/machine-generated texts recognised accurately ?
+Comparing features in the portions generated by LLMs with human written portions   What gives out that a text isn’t likely written by a human ? POS tag proportions ? sentence length ? complex vocabulary ? and are these observed across other domain/LLM texts ?    
+Vision for the finale: HF Space Demo of our work, comparisons with existing work, extension plans
+Multilingual Machine Generated Text Portions Detection
+
+Updates
+We fine tuned and did some evaluation on our models for English-to-Sanskrit translation and question-answering
+Uploaded the dataset for translation and Q&A on huggingface
+
+Upcoming
+Evaluating on BLEU score and other metrics
+Comparison between different models
+Presenting today: Vivek
+Vision for the finale: We are planning to open source recipes, synthetic dataset and Sanskrit LLMs for chat application, translation and for specific documents and books.
+
+Samskrutha LLM
+FastText language classification (Win rate in %)
+English-to-Sanskrit translation
+98.90%
+Q & A
+ROUGE score
+FastText language classification (Win rate in %)
+Base model
+     0.06174 
+                                   27.11 %
+Fine Tuned model
+     0.19111
+                                   73.33 %
+
+Updates
+More Language MCQs added:
+Dutch
+Hindi
+Telugu
+Kannada
+Nepali
+Bengali
+German
+Ukrainian
+Malay
+Persian
+More data being added
+Lots of questions from different exams
+LLM based OCR/processing for speedup.
+Different Variety:
+Driving Exams
+High School
+Competitive
+Teachers Position
+Type of question diversity
+Upcoming
+More language coverage.
+Community Contributions.
+Formatting and provenance.
+Different Topics/exam style.
+Open Questions
+Better free OCR tools/pipelines.
+Continent Coverage
+More contributors/processors
+Other
+
+Presenting today: Harsha
+Vision for the finale: Large coverage of languages with at least 100 questions for each of them, in order to ensure representation, and what can make into the eventual paper.
+Global exams
+
+Updates
+Results for running GCG and AdvPrompter on Aya-8B and Llama 3.1 8B.
+Presenting today: Nishaanth Kanna
+Vision for the finale: Presentation on the Multilingual adversarial robustness of the models, [stretch] release an adversarially robust aya model and the associated paper.
+Multilingual Adversarial Robustness
+Conclusion:
+Even models that have been specifically trained to be adversarially robust (Llama 3.1), fail in multilingual adversarial scenarios. 
+Upcoming
+Specific analysis on these scenarios:languages present in both the models;present only in Aya;not-present in both the models 
+Full experiments on 25 different harmful behaviors with test size of 100 harmful behaviors
+Release ASR comparison for multilingual/english attacks on both the models. 
+[stretch goal] language specific analysis
+[stretch goal] finetune the Aya model to be adversarially robust, multilingually.
+
+Updates
+Data
+Mixing Speech data + General Instruction data to avoid catastrophic forgetting
++3M samples
+
+Model
+Training script
+Tried training Aya-8B, but it's too big for our resources
+Switching to Qwen-2 1.5B
+Vocab extended with 1026 speech tokens.
+
+
+Upcoming
+Finish the training of Qwen-2 1.5B
+Evaluation
+Open Questions
+Full training instead of LoRA?
+Other
+
+Presenting today: Yaya
+Vision for the finale:
+SpeechAya
+
+Questions?
+
+Expedition AYA

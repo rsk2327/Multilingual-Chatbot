@@ -70,7 +70,7 @@ class MultilingualChatWorkflow(object):
             self.llm = ChatOpenAI(model="gpt-4o", streaming=True, temperature = 0.0)
         elif llm.lower() == 'aya':
             self.llm = ChatCohere(model="c4ai-aya-23-35b", streaming=True, temperature = 0.0)
-        elif llm.lower() == 'anthropic':
+        elif llm.lower() == 'claude':
             self.llm = ChatAnthropic(model='claude-3-opus-20240229', streaming = True, temperature = 0.0)
         else:
             raise ValueError("Invalid option provided by LLM. Only accepts the following options : OpenAI, Aya")
@@ -212,11 +212,31 @@ class MultilingualChatWorkflow(object):
         self.user_agents[sender]['agent'].send_text(message)
 
 
-    def get_latest_message(self):
+    def get_latest_message(self) -> List[Dict]:
 
-        output = {}
+        output = []
+
+        userid = self.user_list[0][0]
+        last_sender = self.user_agents[userid]['agent'].chat_history[-1].sender
+
+
+        json_output = {}
+        
         for userid in self.user_agents:
-            output[userid] = self.user_agents[userid]['agent'].chat_history[-1].content
+            json_output[userid] = {'content':self.user_agents[userid]['agent'].chat_history[-1].content,'sender': self.user_agents[userid]['agent'].chat_history[-1].sender}
+
+        output.append(json_output)
+
+
+        if last_sender == 'Aya':
+            json_output = {}
+        
+            for userid in self.user_agents:
+                json_output[userid] = {'content':self.user_agents[userid]['agent'].chat_history[-2].content,'sender': self.user_agents[userid]['agent'].chat_history[-2].sender}
+
+            output.append(json_output)
+            
+        
 
         return output
 
