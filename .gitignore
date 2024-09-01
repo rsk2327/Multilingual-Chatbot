@@ -1,8 +1,8 @@
 .venv/
 
-*.pyc
+**/*.pyc
 
-*.DS_Store
+**/*.DS_Store
 
 .DS_Store
 
