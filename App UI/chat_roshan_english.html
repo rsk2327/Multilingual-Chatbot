@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AYA CHAT</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .status-bar {
+            background-color: #45a049;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            /* width: 100vw; */
+        }
+        .header {
+            background-color: #4363E2;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 24px;
+        }
+
+        #messageDisplay {
+            width: 100%;
+            height: 80%;
+            display:flex;
+            flex-direction: column;
+            border: 1px solid #ccc; 
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 5px;
+            box-sizing: border-box;
+
+        }
+
+        .message {
+            background-color: #4363E2;
+            color: white;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 10px;
+            max-width: 60%;
+            word-wrap: break-word;
+            align-self: flex-start;
+            font-size: 20px;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background-color: #45a049;
+        }
+
+        .sent_message {
+            background-color: #45a049;
+            color: white;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 10px;
+            max-width: 60%;
+            word-wrap: break-word;
+            align-self: flex-end;
+            font-size: 20px;
+        }
+
+        .input-area {
+            display: flex;
+            width: 100%;
+            padding: 10px;
+            background-color: white;
+            box-sizing: border-box
+        }
+        #messageInput {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4363E2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">Aya Chat</div>
+        <div class="status-bar">Roshan [English]</div>
+        <div id="messageDisplay"></div>
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const messageDisplay = document.getElementById('messageDisplay');
+        const messageInput = document.getElementById('messageInput');
+        let socket;
+
+        function formatString(input) {
+            // Trim any leading or trailing spaces
+            input = input.trim();
+
+            // Capitalize the first letter of the string
+            input = input.charAt(0).toUpperCase() + input.slice(1);
+
+            // Make the text bold
+            input = `<b>${input}</b>`;
+
+            return input;
+        }
+
+        function connectWebSocket() {
+            socket = new WebSocket('ws://localhost:8000/ws');
+
+            socket.onopen = function(event) {
+                // addMessage('Connected to API service');
+            };
+
+            socket.onmessage = function(event) {
+                
+
+                const data = JSON.parse(event.data)
+                const content = data.roshan.content;
+                const sender = data.roshan.sender;
+
+                
+
+                if (sender === 'roshan'){
+                    addMessage(formatString(sender) + ': ' + content,'self');
+                }
+                else{
+                    addMessage(formatString(sender) + ': ' + content,'system');
+                }
+                    
+
+               
+            };
+
+            socket.onclose = function(event) {
+                addMessage('Disconnected from API service');
+                setTimeout(connectWebSocket, 5000); // Try to reconnect after 5 seconds
+            };
+
+            socket.onerror = function(error) {
+                console.error('WebSocket Error:', error);
+                addMessage('Error connecting to API service');
+            };
+        }
+
+        function addMessage(message, type) {
+            const messageElement = document.createElement('div');
+
+            message = message.replace(/(Summary:|SUMMARY:)/g, "<br><u><b>SUMMARY:</b></u>");
+            message = message.replace(/(Tasks:|TASKS:)/g, "<br><u><b>TASKS:</b></u>");
+
+            console.log("Message:", message);
+
+            messageElement.innerHTML = message;
+
+            if (type === 'self') {
+                messageElement.className = 'sent_message';
+                
+            }else{
+                messageElement.className = 'message';
+            }
+            messageDisplay.appendChild(messageElement);
+            messageDisplay.scrollTop = messageDisplay.scrollHeight;
+        }
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+
+            if (message && socket.readyState === WebSocket.OPEN) {
+                const jsonMessage = JSON.stringify({
+                    message: message,
+                    sender: 'roshan'
+                });
+                socket.send(jsonMessage);
+                messageInput.value = '';
+            }
+
+            
+        }
+
+        // Connect to WebSocket when the page loads
+        connectWebSocket();
+
+        // Allow sending message with Enter key
+        messageInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
